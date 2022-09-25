@@ -15,5 +15,6 @@ def get_data(col_index_name , col_target_name, dataframe): #col_name es la colum
         val = dataframe.iloc[cont , index_column ] #encuentra el valor de la columna
         datos.append(val) #almacenar valores a la lista de datos
 
-    cont += 1   
+    cont += 1
+    
   return pd.Series(datos)
