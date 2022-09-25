@@ -3,7 +3,7 @@ import pandas as pd
 def to_1D(series):
  return pd.Series([x for _list in series for x in _list])
 
- 
+
 def get_data(col_index_name , col_target_name, dataframe): #col_name es la columna de la que queremos extraer los datos
 
   datos = []
