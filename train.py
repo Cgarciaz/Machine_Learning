@@ -1,302 +1,168 @@
-# Libraries required for the ETL process
-import os
-import base64
-import urllib
-import json
-import time
-import ast
-import warnings
-import pickle
-
-import pandas as pd
-import requests as rq
-
-from dotenv import load_dotenv, find_dotenv
-from pyod.models.knn import KNN
-from sklearn.cluster import KMeans
-
-warnings.filterwarnings('ignore')
+# Change working directory to the directory of the script
+import os 
+os.chdir(os.path.dirname(os.path.abspath(__file__))) 
 
 # =============================================================================
 
-class ETL():
-    
-    # process data
-    def transform(self, df):
-        
-        # Function that unifies the dataframe if exists
-        def unify_df(df):
-            if os.path.exists('data/raw/data_raw.csv'):
-                df_raw = pd.read_csv('data/raw/data_raw.csv')
+# Libraries needed to train the model
+import pickle
+import pandas as pd
 
-                # Is the same dataframe?
-                if df.equals(df_raw):
-                    print("The dataframe is the same, no need to unify")
-                    df.drop_duplicates(inplace=True) # Drop duplicates
-                
-                else:
-                    print("The dataframe is different, unifying")
-                    df = pd.concat([df_raw, df]) # Concatenate dataframes
+from sklearn.preprocessing import LabelEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split, GridSearchCV, RepeatedKFold
+from sklearn.ensemble import RandomForestRegressor
 
-                    # Transform all columns into strings
-                    for col in df.columns:
-                        df[col] = df[col].astype(str)
+from utils.ETL import ETL
+from utils.target_preprocess import *
 
-                    df.drop_duplicates(inplace=True) # Drop duplicates
-                    df.reset_index(drop=True, inplace=True) # Reset index
-            
-            else:
-                print("data_raw.csv does not exist")
-            
-            return df 
-        
-        def drop_columns(df):
-            cols_needed = [
-                'propertyCode', 'price', 'numPhotos', 'size', 
-                'floor', 'rooms', 'bathrooms', 'latitude', 'longitude', 
-                'propertyType', 'parkingSpace', 'exterior', 'hasLift', 
-                'hasPlan', 'has360', 'has3DTour', 'hasVideo'
-                ]
-            df = df[cols_needed] # Keep only columns needed
+# =============================================================================
 
-            # Set propertyCode as index
-            df.set_index('propertyCode', inplace=True)
+# Load data into database
+train = pd.read_csv("data/processed/data_train.csv")
 
-            print("drop_columns process was successful")
-            return df
+# =============================================================================
+train.rename(columns={'Unnamed: 0':'anime_id'}, inplace=True)
+cleaning = train["Genres"].str.split(", ",12, expand=True)
+cleaning.columns = ['Genre_0', 'Genre_1','Genre_2', 'Genre_3','Genre_4', 'Genre_5','Genre_6', 'Genre_7','Genre_8', 'Genre_9', 'Genre_10', 'Genre_11', 'Genre_12']
+train_1 = pd.concat([train['anime_id'], cleaning], axis=1)
+train_unpivoted = train_1.melt(id_vars=['anime_id'], var_name='Type_Genre', value_name='Genre')
+train_unpivoted=train_unpivoted.assign(Value=1)
+#Eliminar columnas que no se usarán para el análisis
+train_unpivoted.drop(['Type_Genre'] , axis = 1 , inplace = True)
+train_pivoted = train_unpivoted.pivot_table(index=['anime_id'],columns=['Genre'],aggfunc='count',fill_value=0)
+train_pivoted.columns = train_pivoted.columns.droplevel(0) #remove amount
+train_pivoted = train_pivoted.reset_index().rename_axis(None, axis=1)
+train_2 = pd.merge(train, train_pivoted, on='anime_id', how='outer')
+#Eliminar columnas que no se usarán para el análisis
+train_2.drop(['Genres'] , axis = 1 , inplace = True)
+cleaning = train["Studios"].str.split(", ",6, expand=True)
+cleaning.columns = ['Studio_0', 'Studio_1','Studio_2', 'Studio_3','Studio_4', 'Studio_5','Studio_6']
+train_1 = pd.concat([train['anime_id'], cleaning], axis=1)
+train_unpivoted = train_1.melt(id_vars=['anime_id'], var_name='Type_Studios', value_name='Studio')
+train_unpivoted=train_unpivoted.assign(Value=1)
+#Eliminar columnas que no se usarán para el análisis
+train_unpivoted.drop(['Type_Studios'] , axis = 1 , inplace = True)
+train_pivoted = train_unpivoted.pivot_table(index=['anime_id'],columns=['Studio'],aggfunc='count',fill_value=0)
+train_pivoted.columns = train_pivoted.columns.droplevel(0) #remove amount
+train_pivoted = train_pivoted.reset_index().rename_axis(None, axis=1)
+train_3 = pd.merge(train_2, train_pivoted, on='anime_id', how='outer')
+#Eliminar columnas que no se usarán para el análisis
+train_3.drop(['Studios'] , axis = 1 , inplace = True)
+categorical_feature = (train_3.dtypes == "category") | (train_3.dtypes == object)
+categorical_cols = train_3.columns[categorical_feature].tolist()
 
-        def process_parkingSpace(df):
-            '''
-            This function process the bad formatted parkingSpace
-            Parameters:
-            -----------
-            df: DataFrame with the raw data of parkingSpace
-            Returns:
-            --------
-            df: DataFrame with the raw data processed.
-            '''
-            # replace all the ' to " in the parkingSpace column
-            df['parkingSpace'] = df['parkingSpace'].str.replace('\'', '"')
+print(f"Preprocessing data...")
 
-            # convert the string to a dictionary
-            df['parkingSpace'] = df['parkingSpace'].apply(
-                lambda x: ast.literal_eval(x) 
-                if type(x) == str else x
+for c in categorical_cols:
+    lbl = LabelEncoder() 
+    lbl.fit(list(train_3[c].values)) 
+    train_3[c] = lbl.transform(list(train_3[c].values))
+
+df = train_3.copy()
+
+# Split data into train and test sets
+X = df.drop(columns=['price'])
+y = df['price']
+
+X_train, X_test, y_train, y_test, train_index, test_index = train_test_split(
+    X, 
+    y, 
+    df.index,
+    test_size=0.2, 
+    random_state=42, 
+    shuffle=True
+)
+
+numeric_cols = X_train.select_dtypes(include=['float64', 'int']).columns.to_list()
+cat_cols = X_train.select_dtypes(include=['object', 'category']).columns.to_list()
+bool_features = X_train.select_dtypes(include=['bool']).columns
+
+# Preprocessing pipeline for numeric features
+numeric_transformer = Pipeline(
+                        steps=[
+                            ('imputer', SimpleImputer(strategy='mean')),
+                            ('scaler', StandardScaler())
+                        ]
+                      )
+
+
+# Preprocessing pipeline for categorical features
+categorical_transformer = Pipeline(
+                            steps=[
+                                ('imputer', SimpleImputer(strategy='most_frequent')),
+                                ('onehot', OneHotEncoder(handle_unknown='ignore'))
+                            ]
+                          )
+
+# Preprocessor to run both numeric and categorical transformations
+preprocessor = ColumnTransformer(
+                    transformers=[
+                        ('numeric', numeric_transformer, numeric_cols),
+                        ('cat', categorical_transformer, cat_cols)
+                    ],
+                    remainder='passthrough'
                 )
 
-            # get the hasParkingSpace of the dict of the parkingSpace column
-            df['hasParkingSpace'] = df['parkingSpace'].apply(
-                lambda x: x['hasParkingSpace'] if type(x) == dict else False
-                )
+X_train_prep = preprocessor.fit_transform(X_train)
+X_test_prep  = preprocessor.transform(X_test)
 
-            # get isParkingSpaceIncludedInPrice 
-            df['isParkingSpaceIncludedInPrice'] = df['parkingSpace'].apply(
-                lambda x: x['isParkingSpaceIncludedInPrice'] if type(x) == dict else False
-                )
+# Preprocess target variable
+y_train_prep, lamda = box_cox_transform(y_train)
 
-            # get the parkingSpacePrice 
-            df['parkingSpacePrice'] = df['parkingSpace'].apply(
-                lambda x: x['parkingSpacePrice'] 
-                if type(x) == dict and 'parkingSpacePrice' in x else 0
-                )
+# Save preprocessor and lambda value for later use
+pickle.dump(preprocessor, open("models/preprocessor.pkl", "wb"))
+pickle.dump(lamda, open("models/lamda_value.pkl", "wb"))
 
-            # drop the parkingSpace column
-            df.drop(columns=['parkingSpace'], inplace=True)
-            
-            print("process_parkingSpace process was successful")
-            return df
+print(f"Data preprocessing completed")
 
-        def process_floor(df):
-            ''' 
-            This function process the bad formatted floor
-            Parameters:
-            -----------
-            df: DataFrame with the raw data of floor
-            Returns:
-            --------
-            df: DataFrame with the raw data processed.
-            '''
+# =============================================================================
 
-            floor_nan = df[df['floor'].isnull()] # get the nan values
-            property_type = floor_nan['propertyType'].value_counts().index.to_list()
+print(f"Training model...")
 
-            for i in property_type:
-                if i == 'chalet':
-                    index = df[(df['propertyType'] == i) & (df['floor'].isnull())].index
-                    df.loc[index, 'floor'] = 0
-                else:
-                    # get the mode of the propertyType column
-                    mode = df['floor'][df['propertyType'] == i].mode()[0]
-                    # get the index of the rows with the propertyType i and the floor is null
-                    index = df[(df['propertyType'] == i) & (df['floor'].isnull())].index
-                    # replace the nan with the mode
-                    df.loc[index, 'floor'] = mode
+# Grid search parameters
+param_grid = {
+    'n_estimators': range(800, 806),
+    'max_depth'   : [None, 16],
+    'max_features': ['sqrt', 5]
+}
 
-            # where floor is 'bj' or 'en' put 0
-            df.loc[df['floor'] == 'bj', 'floor'] = 0
-            df.loc[df['floor'] == 'en', 'floor'] = 0
+# Create instance of RandomForestRegressor
+regressor = RandomForestRegressor(random_state=42)
 
-            # where floor is 'st' put 1
-            df.loc[df['floor'] == 'st', 'floor'] = -1
+# Create cross-validation object
+cv = RepeatedKFold(n_splits=10, n_repeats=3, random_state=42)
 
-            print("process_floor process was successful")
-            return df
-        
-        def process_hasLift(df):
-            ''' 
-            This function process all nan values of hasLift
-            Parameters:
-            -----------
-            df: DataFrame with the raw data of hasLift
-            Returns:
-            --------
-            df: DataFrame with the raw data processed.
-            '''
+# Create instance of GridSearchCV
+grid_search = GridSearchCV(
+    estimator=regressor,
+    param_grid=param_grid,
+    scoring='neg_mean_squared_error',
+    cv=cv,
+    n_jobs=-1,
+)
 
-            # get the index of the rows with the hasLift is null
-            index = df[df['hasLift'].isnull()].index
-            # replace the nan with False
-            df.loc[index, 'hasLift'] = False
-            
-            print("process_hasLift process was successful")
-            return df
-        
-        def retype_data(df):
-            ''' 
-            This function forcetype all columns of the dataset
-            Parameters:
-            -----------
-            df: DataFrame with the raw data
-            Returns:
-            --------
-            df: DataFrame with secure types.
-            '''
+# Fit model to training data
+grid_search.fit(X_train_prep, y_train_prep)
 
-            # int types
-            df['numPhotos'] = df['numPhotos'].astype(int)
-            df['floor'] = df['floor'].astype(int)
-            df['rooms'] = df['rooms'].astype(int)
-            df['bathrooms'] = df['bathrooms'].astype(int)
+print(f"Model training completed")
 
-            # float types
-            df['price'] = df['price'].astype(float)
-            df['size'] = df['size'].astype(float)
-            df['parkingSpacePrice'] = df['parkingSpacePrice'].astype(float)
-            df['latitude'] = df['latitude'].astype(float)
-            df['longitude'] = df['longitude'].astype(float)
+# =============================================================================
+model = grid_search.best_estimator_
 
-            # boolean types
-            df['exterior'] = df['exterior'].astype(bool)
-            df['hasParkingSpace'] = df['hasParkingSpace'].astype(bool)
-            df['isParkingSpaceIncludedInPrice'] = df['isParkingSpaceIncludedInPrice'].astype(bool)
-            df['hasLift'] = df['hasLift'].astype(bool)
-            df['hasPlan'] = df['hasPlan'].astype(bool)
-            df['has360'] = df['has360'].astype(bool)
-            df['has3DTour'] = df['has3DTour'].astype(bool)
-            df['hasVideo'] = df['hasVideo'].astype(bool)
+# Print best parameters and best score
+print(f"Best parameters: {grid_search.best_params_}")
+print(f"Best score: {grid_search.best_score_}")
 
-            # object types
-            df['propertyType'] = df['propertyType'].astype(str)
+# =============================================================================
 
-            order_of_cols = ['price', 'numPhotos', 'floor', 'rooms', 'bathrooms',
-            'size', 'parkingSpacePrice', 'latitude', 'longitude', 'exterior', 
-            'hasParkingSpace', 'isParkingSpaceIncludedInPrice', 
-            'hasLift', 'hasPlan', 'has360', 'has3DTour', 'hasVideo',
-            'propertyType']
-            
-            df = df[order_of_cols]
-            
-            print("retype_data process was successful")
-            return df
+# Save model to disk
+print(f"Saving model to disk...")
+pickle.dump(model, open("models/new_model.pkl", "wb"))
 
-        def drop_outliers(df):
-            '''
-            This function drop the outliers of the dataset by KNN method
-            Parameters:
-            -----------
-            df: DataFrame with the outliers
-            Returns:
-            --------
-            df: DataFrame with the outliers dropped.
-            '''
-            num_cols = df.select_dtypes(include=['int64', 'float64']).columns
-            
-            clf = KNN()
-            clf.fit(df[num_cols])
-            y_pred = clf.predict(df[num_cols])
-
-            print(f'The percentage of outliers is {100*sum(y_pred)/len(y_pred)}%')
-            
-            df = df[y_pred == 0]
-
-            print("drop_outliers process was successful")
-            return df
-
-        def clustering_address(df):
-            '''
-            This function create cluster from the latitude and longitude a append it to the dataset
-            Parameters:
-            -----------
-            df: DataFrame with the latitude and longitude
-            Returns:
-            --------
-            df: DataFrame with the latitude and longitude clustered.
-            '''
-
-            # create the cluster
-            cluster = pickle.load(open('models/kmeans_clustering.pkl', 'rb'))
-            # get the cluster of the latitude and longitude
-            df['direction'] = cluster.predict(df[['latitude', 'longitude']])
-            df['direction'] = df['direction'].map({0: 'central', 1: 'south', 2: 'north', 3: 'west'})
-            
-            # drop the latitude and longitude columns
-            df.drop(columns=['latitude', 'longitude'], inplace=True)
-
-            print("clustering_address process was successful")
-            return df
-        
-        df_processed = unify_df(df) # unify the dataframe with the raw data (if needed)
-        df_processed = drop_columns(df_processed) # drop the columns that are not needed
-
-        df_processed = process_parkingSpace(df_processed) # process the parkingSpace column
-        df_processed = process_floor(df_processed) # process the floor column
-        df_processed = process_hasLift(df_processed) # process the hasLift column
-
-        df_processed = retype_data(df_processed) # force type the columns
-        df_processed = drop_outliers(df_processed) # drop the outliers (by KNN)
-        df_processed = clustering_address(df_processed) # cluster the latitude and longitude columns
-
-        print("The data was processed successfully")
-        return df_processed
-        
-    # Load the data
-    def load_data(self, df_processed):
-        '''
-        This function load the data processed and update our datawarehouse
-        Parameters:
-        -----------
-        df_processed: DataFrame with the data processed
-        Returns:
-        --------
-        df: DataFrame of the data warehouse.
-        '''
-    
-        # load the dataframe to the datawarehouse
-        warehouse_path = 'data/processed/rent_Valencia.csv'
-
-        # if the file exists, append the new data
-        if os.path.exists(warehouse_path):
-            print("Updating the data warehouse")
-            
-            df = pd.read_csv(warehouse_path, index_col=0)
-            df = pd.concat([df, df_processed])
-            
-            df.drop_duplicates(inplace=True)
-            df.to_csv(warehouse_path)
-        else:
-            print("Creating the data warehouse")
-            df_processed.to_csv(warehouse_path)
-            df = df_processed
-
-        print("The data was loaded successfully")
-        return df
+print(f"Model saved successfully, exiting...")
+exit()
