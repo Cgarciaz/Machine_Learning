@@ -5,6 +5,13 @@ import numpy as np
 #        'Start_year', 'Start_season', 'Score', 'range_episodes'],
 #       dtype='object')
 
+# Index(['MAL_ID', 'Type', 'Episodes', 'Rating', 'Start_year', 'Start_season',
+#        'Score', 'range_episodes', 'anime_id', 'Action',
+#        ...
+#        'feel.', 'helo.inc', 'iDRAGONS Creative Studio', 'ixtl', 'l-a-unch・BOX',
+#        'monofilmo', 'pH Studio', 'production doA', 'teamKG', 'ufotable'],
+#       dtype='object', length=689)
+
 class PreProcess():
 
   def transform(df):
@@ -48,14 +55,14 @@ class PreProcess():
     # Eliminar columnas que no se usarán para el análisis
     train_3.drop(['Studios'] , axis = 1 , inplace = True)
 
-    print("drop process was successful")
+    print("transform process was successful")
 
     return train_3
 
   def drop_column(df):
 
     #Eliminar columnas que sobran
-    df.drop(['Start_year'] , axis = 1 , inplace = True)
+    df.drop(['Start_year','MAL_ID'] , axis = 1 , inplace = True)
 
     print("drop_column process was successful")
 
