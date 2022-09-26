@@ -4,8 +4,8 @@ import joblib
 from season import AnimeFeature
 
 # Cargamos los modelos guardados en saved_models
-rf_loaded = joblib.load("saved_models/my_model.pkl")
-encoder_loaded = joblib.load("saved_models/anime_label_encoder.pkl")
+rf_loaded = joblib.load("model/my_model.pkl")
+encoder_loaded = joblib.load("model/anime_label_encoder.pkl")
 
 # Creamos la función de predicción
 def make_prediction(model, encoder, sample_json):
