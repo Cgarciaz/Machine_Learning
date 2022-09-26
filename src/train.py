@@ -18,13 +18,19 @@ import pandas as pd
 # from sklearn.model_selection import train_test_split, GridSearchCV, RepeatedKFold
 # from sklearn.ensemble import RandomForestRegressor
 
-# from utils.procesador import *
+from utils.cleaning import Cleaning
 # =============================================================================
 
 # Load data into database
 # df = pd.read_csv(path + "src\data\raw\data.csv")
-df = pd.read_csv("data/raw/data.csv", na_values = ['Unknown'], on_bad_lines='skip')
+df_temp = pd.read_csv("data/raw/data.csv", na_values = ['Unknown'], on_bad_lines='skip')
+df_season = pd.read_csv("data/raw/anime_season.csv")
 
-print(f"Número total de registros: {len(df)}")
+print(f"Número total de registros ant: {len(df_temp)}")
+
+# Process data
+df_temp = Cleaning.clean(df_temp)
+
+print(f"Número total de registros ant: {len(df_temp)}")
 
 exit()
