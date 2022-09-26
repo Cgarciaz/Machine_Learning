@@ -1,24 +1,24 @@
 from flask import Flask, session, url_for, render_template, redirect
 import joblib
 
-from season import Season
+from season import AnimeFeature
 
 # Cargamos los modelos guardados en saved_models
-knn_loaded = joblib.load("saved_models/my_model.pkl")
-# encoder_loaded = joblib.load("saved_models/iris_label_encoder.pkl")
+rf_loaded = joblib.load("saved_models/my_model.pkl")
+encoder_loaded = joblib.load("saved_models/anime_label_encoder.pkl")
 
 # Creamos la función de predicción
 def make_prediction(model, encoder, sample_json):
-    SepalLengthCm = sample_json['SepalLengthCm']
-    SepalWidthCm = sample_json['SepalWidthCm']
-    PetalLengthCm = sample_json['PetalLengthCm']
-    PetalWidthCm = sample_json['PetalWidthCm']
+    Start_season = sample_json['Start_season']
+    Type = sample_json['Type']
+    Episodes = sample_json['Episodes']
+    Rating = sample_json['Rating']
     
     # Creamos un vector de input
-    flower = [[SepalLengthCm, SepalWidthCm, PetalLengthCm, PetalWidthCm]]
+    feature = [[Start_season, Type, Episodes, Rating]]
 
     # Predicción
-    prediction_raw = model.predict(flower)
+    prediction_raw = model.predict(feature)
 
     # Convertimos los índices en labels de las clases
     prediction_real = encoder.inverse_transform(prediction_raw)
@@ -31,23 +31,23 @@ app.config['SECRET_KEY'] = 'mysecretkey'
 
 @app.route('/', methods=['GET','POST'])
 def index():
-    form = FlowerForm()
+    form = AnimeFeature()
 
     if form.validate_on_submit():
-        session['SepalLengthCm'] = form.SepalLengthCm.data
-        session['SepalWidthCm'] = form.SepalWidthCm.data
-        session['PetalLengthCm'] = form.PetalLengthCm.data
-        session['PetalWidthCm'] = form.PetalWidthCm.data
+        session['Start_season'] = form.Start_season.data
+        session['Type'] = form.Type.data
+        session['Episodes'] = form.Episodes.data
+        session['Rating'] = form.Rating.data
 
         return redirect(url_for('prediction'))
     return render_template("home.html", form=form)
 
 @app.route('/prediction', methods=['POST','GET'])
 def prediction():
-    content = {'SepalLengthCm': float(session['SepalLengthCm']), 'SepalWidthCm': float(session['SepalWidthCm']),
-               'PetalLengthCm': float(session['PetalLengthCm']), 'PetalWidthCm': float(session['PetalWidthCm'])}
+    content = {'Start_season': float(session['Start_season']), 'Type': float(session['Type']),
+               'Episodes': float(session['Episodes']), 'Rating': float(session['Rating'])}
 
-    results = make_prediction(knn_loaded, encoder_loaded, content)
+    results = make_prediction(rf_loaded, encoder_loaded, content)
 
     return render_template('prediction.html', results=results)
 
