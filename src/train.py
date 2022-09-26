@@ -27,10 +27,12 @@ df_temp = pd.read_csv("data/raw/data.csv", na_values = ['Unknown'], on_bad_lines
 df_season = pd.read_csv("data/raw/anime_season.csv")
 
 print(f"Número total de registros ant: {len(df_temp)}")
+print(f"Número total de column ant: {len(df_temp.columns)}")
 
 # Process data
-df_temp = Cleaning.clean(df_temp)
+df_temp = Cleaning.drop(df_temp)
 
-print(f"Número total de registros ant: {len(df_temp)}")
+print(f"Número total de registros: {len(df_temp)}")
+print(f"Número total de column: {len(df_temp.columns)}")
 
 exit()
