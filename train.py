@@ -17,9 +17,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split, GridSearchCV, RepeatedKFold
 from sklearn.ensemble import RandomForestRegressor
 
-from utils.ETL import ETL
-from utils.target_preprocess import *
-
 # =============================================================================
 
 # Load data into database
@@ -66,8 +63,8 @@ for c in categorical_cols:
 df = train_3.copy()
 
 # Split data into train and test sets
-X = df.drop(columns=['price'])
-y = df['price']
+X = df.drop(columns=['Score'], axis=1)
+y = df['Score']
 
 X_train, X_test, y_train, y_test, train_index, test_index = train_test_split(
     X, 
