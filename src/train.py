@@ -22,12 +22,8 @@ from utils.cleaning import Cleaning
 # =============================================================================
 
 # Load data into database
-# df = pd.read_csv(path + "src\data\raw\data.csv")
 df_temp = pd.read_csv("data/raw/data.csv", sep=',', na_values = ['Unknown'])
 df_season = pd.read_csv("data/raw/anime_season.csv")
-
-print(f"Número total de registros ant: {len(df_temp)}")
-print(f"Número total de column ant: {len(df_temp.columns)}")
 
 # Process data
 df_temp = Cleaning.transform(df_season,df_temp)
