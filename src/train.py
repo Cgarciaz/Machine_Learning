@@ -25,10 +25,11 @@ from utils.cleaning import Cleaning
 df_temp = pd.read_csv("data/raw/data.csv", sep=',', na_values = ['Unknown'])
 df_season = pd.read_csv("data/raw/anime_season.csv")
 
-# Process data
+# Cleaning data
 df_temp = Cleaning.transform(df_season,df_temp)
 df_temp = Cleaning.drop(df_temp)
 df_temp = Cleaning.transform2(df_temp)
 
+# Process data
 
 exit()
