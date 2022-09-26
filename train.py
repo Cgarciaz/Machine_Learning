@@ -17,7 +17,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split, GridSearchCV, RepeatedKFold
 from sklearn.ensemble import RandomForestRegressor
 
-import utils.procesador
+from utils.procesador import *
 # =============================================================================
 
 # Load data into database
@@ -77,8 +77,6 @@ X_train, X_test, y_train, y_test, train_index, test_index = train_test_split(
 )
 
 numeric_cols = X_train.select_dtypes(include=['float64', 'int']).columns.to_list()
-cat_cols = X_train.select_dtypes(include=['object', 'category']).columns.to_list()
-bool_features = X_train.select_dtypes(include=['bool']).columns
 
 # Preprocessing pipeline for numeric features
 numeric_transformer = Pipeline(
@@ -109,6 +107,7 @@ preprocessor = ColumnTransformer(
 X_train_prep = preprocessor.fit_transform(X_train)
 X_test_prep  = preprocessor.transform(X_test)
 
+
 # Preprocess target variable
 y_train_prep, lamda = box_cox_transform(y_train)
 
@@ -133,7 +132,7 @@ param_grid = {
 regressor = RandomForestRegressor(random_state=42)
 
 # Create cross-validation object
-cv = RepeatedKFold(n_splits=10, n_repeats=3, random_state=42)
+cv = RepeatedKFold()
 
 # Create instance of GridSearchCV
 grid_search = GridSearchCV(
