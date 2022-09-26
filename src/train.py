@@ -28,19 +28,11 @@ df_season = pd.read_csv("data/raw/anime_season.csv")
 
 print(f"Número total de registros ant: {len(df_temp)}")
 print(f"Número total de column ant: {len(df_temp.columns)}")
-print(f"Número total de column: {df_season.head()}")
 
 # Process data
 df_temp = Cleaning.transform(df_season,df_temp)
+df_temp = Cleaning.drop(df_temp)
+df_temp = Cleaning.transform2(df_temp)
 
-print(f"Número total de registros: {len(df_temp)}")
-print(f"Número total de column: {len(df_temp.columns)}")
-print(f"Número total de column: {df_temp.columns}")
-
-# # Process data
-# df_temp = Cleaning.drop(df_temp)
-
-# print(f"Número total de registros: {len(df_temp)}")
-# print(f"Número total de column: {len(df_temp.columns)}")
 
 exit()
