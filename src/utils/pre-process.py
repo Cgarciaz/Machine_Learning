@@ -1,6 +1,10 @@
 import pandas as pd
 import numpy as np
 
+# Index(['MAL_ID', 'Genres', 'Type', 'Episodes', 'Studios', 'Rating',
+#        'Start_year', 'Start_season', 'Score', 'range_episodes'],
+#       dtype='object')
+
 class PreProcess():
 
   def transform(df_season, df):
