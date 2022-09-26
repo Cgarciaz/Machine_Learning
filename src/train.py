@@ -31,13 +31,16 @@ df_temp = Cleaning.transform(df_season,df_temp)
 df_temp = Cleaning.drop(df_temp)
 df_temp = Cleaning.transform2(df_temp)
 
-# Process data
+# Process data - Encoder
 df_temp = PreProcess.transform(df_temp)
-df_temp = PreProcess.drop_column(df_temp)
-df_temp = PreProcess.transform2(df_temp)
+# Convertimos o serializamos las clases en formato pickle pkl
+import joblib
+# import pickle
+
+joblib.dump(df_temp, "model/anime_label_encoder.pkl")
+print(" --- Pickle labelEncoder dump executed ---")
 
 # Modelling data
-
 X = df_temp.drop(['Score'], axis=1)
 y = df_temp['Score']
 
