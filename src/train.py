@@ -35,7 +35,7 @@ df_temp = Cleaning.transform(df_season,df_temp)
 
 print(f"Número total de registros: {len(df_temp)}")
 print(f"Número total de column: {len(df_temp.columns)}")
-print(f"Número total de column: {df_temp.head()}")
+print(f"Número total de column: {df_temp.columns}")
 
 # # Process data
 # df_temp = Cleaning.drop(df_temp)
