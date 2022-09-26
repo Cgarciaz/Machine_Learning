@@ -1,7 +1,7 @@
 from flask import Flask, session, url_for, render_template, redirect
 import joblib
 
-from season import AnimeFeature
+from feature import AnimeFeature
 
 # Cargamos los modelos guardados en saved_models
 rf_loaded = joblib.load("model/my_model.pkl")
