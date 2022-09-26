@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy as np
+from sklearn.preprocessing import LabelEncoder
 
 # Index(['MAL_ID', 'Genres', 'Type', 'Episodes', 'Studios', 'Rating',
 #        'Start_year', 'Start_season', 'Score', 'range_episodes'],
@@ -65,5 +65,22 @@ class PreProcess():
     df.drop(['Start_year','MAL_ID'] , axis = 1 , inplace = True)
 
     print("drop_column process was successful")
+
+    return df
+
+  def transform2(df):
+
+    # Para convertir las categóricas en binarias debemos pasarla primero a booleanas
+    # evaluando si son del tipo object o category
+    categorical_feature = (df.dtypes == "category") | (df.dtypes == object)
+    categorical_cols = df.columns[categorical_feature].tolist()
+
+    for c in categorical_cols:
+      lbl = LabelEncoder() 
+      lbl.fit(list(df[c].values)) 
+      df[c] = lbl.transform(list(df[c].values))
+
+
+    print("transform2 process was successful")
 
     return df
