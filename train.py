@@ -1,6 +1,6 @@
-# Change working directory to the directory of the script
+# Get the current working directory
 import os 
-os.chdir(os.path.dirname(os.path.abspath(__file__))) 
+cwd = os.getcwd()
 
 # =============================================================================
 
