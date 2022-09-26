@@ -19,6 +19,7 @@ import pandas as pd
 # from sklearn.ensemble import RandomForestRegressor
 
 from utils.cleaning import Cleaning
+from utils.pre_process import PreProcess
 # =============================================================================
 
 # Load data into database
@@ -31,5 +32,9 @@ df_temp = Cleaning.drop(df_temp)
 df_temp = Cleaning.transform2(df_temp)
 
 # Process data
+df_temp = PreProcess.transform(df_temp)
+df_temp = PreProcess.drop_column(df_temp)
+
+# print(df_temp.columns)
 
 exit()
