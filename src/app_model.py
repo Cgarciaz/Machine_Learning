@@ -1,9 +1,6 @@
-from crypt import methods
-import json
-from types import MethodDescriptorType
+# from crypt import methods
 from flask import Flask, jsonify, request
 import joblib
-import sklearn
 
 app = Flask(__name__)
 
@@ -11,7 +8,7 @@ app = Flask(__name__)
 def home():
     return "la pagina esta funcionando"
 
-@app.route("/predecir", methods = ["POST"])
+@app.route("/predecir",  methods = ["POST"])
 def predecir():
     json = request.get_json(force=True)
     medidas = json['Medidas']
