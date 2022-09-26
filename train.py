@@ -17,6 +17,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split, GridSearchCV, RepeatedKFold
 from sklearn.ensemble import RandomForestRegressor
 
+import utils.procesador
 # =============================================================================
 
 # Load data into database
