@@ -20,7 +20,7 @@ def make_prediction(model, encoder, sample_json):
     prediction_raw = model.predict(feature)
 
     # Convertimos los índices en labels de las clases
-    prediction_real = encoder.inverse_transform(prediction_raw)
+    prediction_real = prediction_raw
 
     return prediction_real[0]
 # creamos la app de Flask
