@@ -57,7 +57,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20, rand
 
 #Linear Regression
 lm = LinearRegression()
-lm.fit(X_train, y_train)
+lm.fit(X_train.values, y_train.values)
 pickle.dump(lm,open('model/lasso_model.pkl', 'wb'))
 
 lasso = make_pipeline(RobustScaler(), Lasso(alpha =0.0005, random_state=1))
@@ -76,15 +76,15 @@ GBoost = GradientBoostingRegressor(n_estimators=3000, learning_rate=0.05,
 pickle.dump(GBoost,open('model/GBoost_model.pkl', 'wb'))
 
 Tree = DecisionTreeRegressor()
-Tree.fit(X_train, y_train)
+Tree.fit(X_train.values, y_train.values)
 pickle.dump(Tree,open('model/Tree_model.pkl', 'wb'))
 
 SVR_model = SVR()
-SVR_model.fit(X_train, y_train)
+SVR_model.fit(X_train.values, y_train.values)
 pickle.dump(SVR_model,open('model/SVR_model.pkl', 'wb'))
 
 rf_model = RandomForestRegressor()
-rf_model.fit(X_train, y_train)
+rf_model.fit(X_train.values, y_train.values)
 pickle.dump(rf_model,open('model/my_model.pkl', 'wb'))
 
 exit()
