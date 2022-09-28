@@ -31,8 +31,17 @@ df_temp = Cleaning.transform(df_season,df_temp)
 df_temp = Cleaning.drop(df_temp)
 df_temp = Cleaning.transform2(df_temp)
 
-# Process data - Encoder
-df_temp = PreProcess.transform(df_temp)
+# Matriz de features
+categorical_feature = (df_temp.dtypes == "category") | (df_temp.dtypes == object)
+categorical_cols = df_temp.columns[categorical_feature].tolist()
+
+# Creamos la instancia de LabelEncoder
+from sklearn.preprocessing import LabelEncoder
+
+for c in categorical_cols:
+    lbl = LabelEncoder() 
+    lbl.fit(list(df_temp[c].values)) 
+    df_temp[c] = lbl.transform(list(df_temp[c].values))
 
 # Convertimos o serializamos las clases en formato pickle pkl
 import joblib
@@ -40,7 +49,7 @@ import joblib
 joblib.dump(df_temp, "model/anime_label_encoder.pkl")
 print(" --- Pickle labelEncoder dump executed ---")
 
-# Modelling data
+# Train and Test split
 X = df_temp.drop(['Score'], axis=1)
 y = df_temp['Score']
 
@@ -48,7 +57,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20, rand
 
 #Linear Regression
 lm = LinearRegression()
-lm.fit(X_train.values, y_train.values)
+lm.fit(X_train, y_train)
 pickle.dump(lm,open('model/lasso_model.pkl', 'wb'))
 
 lasso = make_pipeline(RobustScaler(), Lasso(alpha =0.0005, random_state=1))
@@ -67,15 +76,15 @@ GBoost = GradientBoostingRegressor(n_estimators=3000, learning_rate=0.05,
 pickle.dump(GBoost,open('model/GBoost_model.pkl', 'wb'))
 
 Tree = DecisionTreeRegressor()
-Tree.fit(X_train.values, y_train.values)
+Tree.fit(X_train, y_train)
 pickle.dump(Tree,open('model/Tree_model.pkl', 'wb'))
 
 SVR_model = SVR()
-SVR_model.fit(X_train.values, y_train.values)
+SVR_model.fit(X_train, y_train)
 pickle.dump(SVR_model,open('model/SVR_model.pkl', 'wb'))
 
 rf_model = RandomForestRegressor()
-rf_model.fit(X_train.values, y_train.values)
+rf_model.fit(X_train, y_train)
 pickle.dump(rf_model,open('model/my_model.pkl', 'wb'))
 
 exit()
