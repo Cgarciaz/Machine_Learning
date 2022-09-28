@@ -7,8 +7,7 @@ from feature import AnimeFeature
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecretkey'
 
-@app.route('/', methods=['GET'])
-# @app.route('/', methods=['GET','POST'])
+@app.route('/', methods=['GET','POST'])
 def index():
     
     form = AnimeFeature()
@@ -19,6 +18,7 @@ def index():
         session['Rating'] = form.Rating.data
 
         return redirect(url_for('prediction'))
+    return render_template("home.html", form=form)
 
 # Ejecutamos la aplicación app.run()
 if __name__ == '__main__':
