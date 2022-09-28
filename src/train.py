@@ -33,9 +33,9 @@ df_temp = Cleaning.transform2(df_temp)
 
 # Process data - Encoder
 df_temp = PreProcess.transform(df_temp)
+
 # Convertimos o serializamos las clases en formato pickle pkl
 import joblib
-# import pickle
 
 joblib.dump(df_temp, "model/anime_label_encoder.pkl")
 print(" --- Pickle labelEncoder dump executed ---")
