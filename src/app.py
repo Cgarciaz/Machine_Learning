@@ -12,16 +12,13 @@ app.config['SECRET_KEY'] = 'mysecretkey'
 def index():
     
     form = AnimeFeature()
-    # if form.validate_on_submit():
-    #     session['Start_season'] = form.Start_season.data
-    #     session['Type'] = form.Type.data
-    #     session['Episodes'] = form.Episodes.data
-    #     session['Rating'] = form.Rating.data
+    if form.validate_on_submit():
+        session['Start_season'] = form.Start_season.data
+        session['Type'] = form.Type.data
+        session['Episodes'] = form.Episodes.data
+        session['Rating'] = form.Rating.data
 
-    #     return redirect(url_for('prediction'))
-    return render_template("home.html", form=form)
-
-    # return 'hola'
+        return redirect(url_for('prediction'))
 
 # Ejecutamos la aplicación app.run()
 if __name__ == '__main__':
