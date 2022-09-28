@@ -74,6 +74,7 @@ class Cleaning():
     df = pd.merge(df, df_range, on = "MAL_ID", how='outer')
 
     df['Score'] = df['Score'].astype('float')
+    df = df[['Start_season','Type','Episodes','Rating','Score']]
 
     print("transform2 process was successful")
 
