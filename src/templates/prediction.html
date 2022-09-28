@@ -16,10 +16,10 @@
 
 <h1>Thank you. Here is the information you have provided.</h1>
 <ul class="list-group">
-     <li class="list-group-item">Sepal Length: {{ session['SepalLengthCm'] }}</li>
-     <li class="list-group-item">Sepal Width: {{ session['SepalWidthCm'] }}</li>
-     <li class="list-group-item">Petal Length: {{ session['PetalLengthCm'] }}</li>
-     <li class="list-group-item">Petal Width: {{ session['PetalWidthCm'] }}</li>
+     <li class="list-group-item">Season (0-3): {{ session['Start_season'] }}</li>
+     <li class="list-group-item">Type (0-5): {{ session['Type'] }}</li>
+     <li class="list-group-item">Episodes (max 350): {{ session['Episodes'] }}</li>
+     <li class="list-group-item">Rating (0-5): {{ session['Rating'] }}</li>
 </ul>
 <br>
             <h2>Prediction Result: <span style="color:red;">{{ results }}</span></h2>
