@@ -23,6 +23,7 @@ def make_prediction(model, encoder, sample_json):
     prediction_real = prediction_raw
 
     return prediction_real[0]
+
 # creamos la app de Flask
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecretkey'
@@ -42,12 +43,14 @@ def index():
 
 @app.route('/prediction', methods=['POST','GET'])
 def prediction():
-    content = {'Start_season': float(session['Start_season']), 'Type': float(session['Type']),
-               'Episodes': float(session['Episodes']), 'Rating': float(session['Rating'])}
+    content = {'Start_season': float(session['Start_season']), 
+               'Type': float(session['Type']),
+               'Episodes': float(session['Episodes']), 
+               'Rating': float(session['Rating'])}
 
-    results = make_prediction(rf_loaded, encoder_loaded, content)
+    result_score = make_prediction(rf_loaded, encoder_loaded, content)
 
-    return render_template('prediction.html', results=results)
+    return render_template('prediction.html', result_score=result_score)
 
 # Ejecutamos la aplicación app.run()
 if __name__ == '__main__':
