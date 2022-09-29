@@ -23,25 +23,43 @@
         <tr>
         <th>Feature</th>
         <th>Value</th>
+        <th>Legend</th>
     </tr>
         <tr>
             <td> {{ form.Start_season.label }}</td>
-            <td> {{ form.Start_season }}</td>
+            <td><pre>{{ form.Start_season }}</pre></td>
+            <td><pre>0: Fall
+1: Spring
+2: Summer
+3: Winter</pre></td>
         </tr>
 
     <tr>
         <td>{{ form.Type.label }}</td>
         <td> {{ form.Type }}</td>
+        <td><pre>0: Movie
+1: Music
+2: ONA
+3: OVA
+4: Special
+5: TV</pre></td>
     </tr>
 
     <tr>
         <td>{{ form.Episodes.label }}</td>
         <td>{{ form.Episodes }}</td>
+        <td> </td>
     </tr>
 
     <tr>
         <td>{{ form.Rating.label }}</td>
         <td>{{ form.Rating }}</td>
+        <td><pre>0: G - All Ages
+1: PG - Children
+2: PG-13 - Teens 13 or older
+3: R - 17+ (violence & profanity)
+4: R+ - Mild Nudity
+5: Rx - Hentai</pre></td>
     </tr>
     </table>
     {{ form.submit() }}
