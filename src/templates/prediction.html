@@ -14,15 +14,16 @@
         <div class="span4"></div>
         <div class="span4">
 
-<h1>Thank you. Here is the information you have provided.</h1>
+<h1>Your created anime will be....</h1>
 <ul class="list-group">
-     <li class="list-group-item">Season (0-3): {{ session['Start_season'] }}</li>
-     <li class="list-group-item">Type (0-5): {{ session['Type'] }}</li>
-     <li class="list-group-item">Episodes (max 350): {{ session['Episodes'] }}</li>
-     <li class="list-group-item">Rating (0-5): {{ session['Rating'] }}</li>
+     <li class="list-group-item">Season: {{ session['Start_season'] }}</li>
+     <li class="list-group-item">Type: {{ session['Type'] }}</li>
+     <li class="list-group-item">Episodes: {{ session['Episodes'] }}</li>
+     <li class="list-group-item">Rating: {{ session['Rating'] }}</li>
 </ul>
 <br>
-            <h2>Prediction Result: <span style="color:red;">{{ results }}</span></h2>
+            <h2>Prediction Score: <span style="color:red;">{{ result_score }}</span></h2>
+            <!-- <h2>Prediction Enjoyment: <span style="color:red;">{{ result_label }}</span></h2> -->
 
 </div>
 <div class="span4"></div>
