@@ -62,18 +62,7 @@ class Cleaning():
     # Renombrar columnas
     df.rename(columns={'New_score2':'Score'}, inplace=True)
 
-    # Creación de rango de episodios
-    df_range = pd.DataFrame()
-    max_episode = int(df['Episodes'].max()) + 12
-    for index in range(len(df)):
-      for i in range(1, max_episode, 12):
-        val2 = i + 12
-        if df.Episodes.loc[index] >= i and df.Episodes.loc[index] < val2:
-          nueva_fila = {"MAL_ID": int(df.MAL_ID.loc[index]),"range_episodes":'[' + str(i) + ' - ' + str(val2) + ']'} # creamos un diccionario
-          df_range = df_range.append(nueva_fila, ignore_index=True)
-    df = pd.merge(df, df_range, on = "MAL_ID", how='outer')
-
-    df['Score'] = df['Score'].astype('float')
+    df['Score'] = round(df['Score'].astype('float'))
     df = df[['Start_season','Type','Episodes','Rating','Score']]
 
     print("transform2 process was successful")
