@@ -56,35 +56,33 @@ y = df_temp['Score']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20, random_state = 42)
 
 #Linear Regression
-lm = LinearRegression()
-lm.fit(X_train.values, y_train.values)
-pickle.dump(lm,open('model/lasso_model.pkl', 'wb'))
+model_lr = LinearRegression()
+model_lr.fit(X_train,y_train)
+pickle.dump(model_lr,open('model/lr_model.pkl', 'wb'))
 
-lasso = make_pipeline(RobustScaler(), Lasso(alpha =0.0005, random_state=1))
-pickle.dump(lasso,open('model/lasso_model.pkl', 'wb'))
+# Random Forest
+model_rf = RandomForestRegressor()
+model_rf.fit(X_train, y_train)
+pickle.dump(model_rf,open('model/rf_model.pkl', 'wb'))
 
-ENet = make_pipeline(RobustScaler(), ElasticNet(alpha=0.0005, l1_ratio=.9, random_state=3))
-pickle.dump(ENet,open('model/ENet_model.pkl', 'wb'))
+# Decision Tree
+model_dt = DecisionTreeRegressor()
+model_dt.fit(X_train, y_train)
+pickle.dump(model_rf,open('model/dt_model.pkl', 'wb'))
 
-KRR = KernelRidge(alpha=0.6, kernel='polynomial', degree=2, coef0=2.5)
-pickle.dump(KRR,open('model/KRR_model.pkl', 'wb'))
+# Support Vector
+model_svr = SVR()
+model_svr.fit(X_train, y_train)
+pickle.dump(model_rf,open('model/svr_model.pkl', 'wb'))
 
-GBoost = GradientBoostingRegressor(n_estimators=3000, learning_rate=0.05,
-                                   max_depth=4, max_features='sqrt',
-                                   min_samples_leaf=15, min_samples_split=10, 
-                                   loss='huber', random_state =5)
-pickle.dump(GBoost,open('model/GBoost_model.pkl', 'wb'))
+# Kernel Ridge
+model_krr = KernelRidge(alpha=1.0,kernel='polynomial',degree=3)
+model_krr.fit(X_train, y_train)
+pickle.dump(model_rf,open('model/krr_model.pkl', 'wb'))
 
-Tree = DecisionTreeRegressor()
-Tree.fit(X_train.values, y_train.values)
-pickle.dump(Tree,open('model/Tree_model.pkl', 'wb'))
-
-SVR_model = SVR()
-SVR_model.fit(X_train.values, y_train.values)
-pickle.dump(SVR_model,open('model/SVR_model.pkl', 'wb'))
-
-rf_model = RandomForestRegressor()
-rf_model.fit(X_train.values, y_train.values)
-pickle.dump(rf_model,open('model/my_model.pkl', 'wb'))
+# Gradient Boosting
+model_gbt = GradientBoostingRegressor()
+model_gbt.fit(X_train, y_train)
+pickle.dump(model_rf,open('model/my_model.pkl', 'wb'))
 
 exit()
